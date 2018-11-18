@@ -17,7 +17,7 @@ class InputCheckbox extends Component {
         this.setState({checked: this.props.checked});
     }
     componentDidMount() {
-        this.props.vBoo.changeCheckbox(this.state.checked ? this.props.value: '');
+        this.props.vBoo.mountCheckbox(this.state.checked ? this.props.value: '');
         this.props.vBoo.subscribe('reset', this.reset);
     };
     componentWillUnmount() {

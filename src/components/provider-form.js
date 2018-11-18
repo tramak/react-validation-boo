@@ -58,12 +58,14 @@ export default class ProviderForm extends Component {
         this.__throttleVaidate = throttle(this.__validate, delay);
     };
     mount = (name, value) => {
+        this.__observer.publish('mount:input', {name, value});
         let type = constants.EVENT_INIT;
         this.__initField(name, value, type);
         this.__fields[name].type = type;
         this.__change(name, value, type);
     };
     unMount = (name) => {
+        this.__observer.publish('unmount:input', {name});
         if(this.__fields[name]) {
             delete(this.__fields[name]);
 
@@ -74,6 +76,11 @@ export default class ProviderForm extends Component {
             });
         }
     };
+    change = (name, value, type = constants.EVENT_CHANGE) => {
+        this.__observer.publish('change:input', {name, value});
+        this.__initField(name, value, type);
+        this.__change(name, value, type);
+    };
     __initField(name, value, type) {
         if(!this.__fields[name]) this.__fields[name] = {
             value: value,
@@ -83,13 +90,6 @@ export default class ProviderForm extends Component {
             typeInput: constants.TYPE_INPUT
         };
     }
-    change = (name, value, type = constants.EVENT_CHANGE) => {
-        this.__observer.publish('change:input', {
-            name, value
-        });
-        this.__initField(name, value, type);
-        this.__change(name, value, type);
-    };
     __change(name, value, type) {
         this.__fields[name].value = value;
 
@@ -107,7 +107,18 @@ export default class ProviderForm extends Component {
             }
         }
     };
+    mountRadio = (name, value, checked = false) => {
+        let type = constants.EVENT_INIT;
+        this.__observer.publish('mount:input', {name, value, checked});
+        this.__initFieldRadio(name, value, checked, type);
+        this.__changeRadio(name, value, checked, type);
+    };
     changeRadio = (name, value, checked = false, type = constants.EVENT_CHANGE) => {
+        this.__observer.publish('change:input', {name, value, checked});
+        this.__initFieldRadio(name, value, checked, type);
+        this.__changeRadio(name, value, checked, type);
+    };
+    __initFieldRadio(name, value, checked, type) {
         if (!this.__fields[name]) {
             this.__fields[name] = {
                 isValid: false,
@@ -119,29 +130,36 @@ export default class ProviderForm extends Component {
                 this.__validate(name, '');
             }
         }
-
+    }
+    __changeRadio(name, value, checked, type) {
         if(checked) {
-            this.__observer.publish('change:input', {
-                name, value
-            });
-
             if(type === constants.EVENT_INIT) {
                 this.__fields[name].type = type;
             }
             this.__fields[name].value = value;
             this.__validate(name, value);
         }
-    };
+    }
     isCheckedRadio = (name, value) => {
         return this.__fields.hasOwnProperty(name)
             && this.__fields[name].hasOwnProperty('value')
             && this.__fields[name].value === value;
     };
-    changeCheckbox = (name, value) => {
-        this.__observer.publish('change:input', {
-            name, value
-        });
+    mountCheckbox = (name, value) => {
+        this.__observer.publish('mount:input', {name, value});
+        this.__initFieldCheckbox(name, value);
 
+        this.__fields[name].value = value;
+        this.__validate(name, value);
+    };
+    changeCheckbox = (name, value) => {
+        this.__observer.publish('change:input', {name, value});
+        this.__initFieldCheckbox(name, value);
+
+        this.__fields[name].value = value;
+        this.__validate(name, value);
+    };
+    __initFieldCheckbox(name, value) {
         if (!this.__fields[name]) {
             this.__fields[name] = {
                 isValid: false,
@@ -151,10 +169,7 @@ export default class ProviderForm extends Component {
         } else {
             this.__fields[name].type = constants.EVENT_BLUR;
         }
-
-        this.__fields[name].value = value;
-        this.__validate(name, value);
-    };
+    }
     addError = (name, error) => {
         this.__fields[name].error = error;
         this.__fields[name].isValid = false;
@@ -298,6 +313,8 @@ export default class ProviderForm extends Component {
                 let name = item.props.name;
                 item.props.vBoo = {
                     mount: (value) => this.mount(name, value),
+                    mountCheckbox: (value) => this.mountCheckbox(name, value),
+                    mountRadio: (value, checked) => this.mountRadio(name, value, checked),
                     unMount: () => this.unMount(name),
                     change: (value, type) => this.change(name, value, type),
                     changeRadio: (value, checked, type) => this.changeRadio(name, value, checked, type),
@@ -315,6 +332,8 @@ export default class ProviderForm extends Component {
                 this.__connectInput(item.props.children);
             }
         });
+
+        return children;
     };
     __issetNameRules(name) {
         return this.__rules.find(item => {

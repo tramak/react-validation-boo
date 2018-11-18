@@ -1,13 +1,10 @@
-import React, {Component, PureComponent} from 'react';
-import constants from '../constants';
+import React, {Component} from 'react';
 
 export default class Form extends Component {
     render() {
-        this.props.connect(this.props.children);
-
         return (
             <form {...this.props}>
-                {this.props.children}
+                {this.props.connect(this.props.children)}
             </form>
         );
     }

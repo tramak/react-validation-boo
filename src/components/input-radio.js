@@ -11,7 +11,7 @@ class InputRadio extends Component {
         }
     }
     componentDidMount() {
-        this.props.vBoo.changeRadio(this.props.value, this.props.checked, constants.EVENT_INIT);
+        this.props.vBoo.mountRadio(this.props.value, this.props.checked);
         this.props.vBoo.subscribe('reset', this.reset);
     };
     componentWillUnmount() {
