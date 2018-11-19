@@ -1,47 +1,28 @@
 import React, {Component} from 'react';
-import constants from '../constants';
 
 class InputCheckbox extends Component {
-    componentWillMount() {
-        this.cloneProps = Object.assign({}, this.props);
-        this.cloneProps.type = 'checkbox';
-
-        if(typeof(this.cloneProps.checked) !== 'undefined') {
-            delete(this.cloneProps.checked);
-        }
-
-        if(typeof(this.cloneProps.onChange) !== 'undefined') {
-            delete(this.cloneProps.onChange);
-        }
-
-        this.setState({checked: this.props.checked});
-    }
     componentDidMount() {
-        this.props.vBoo.mountCheckbox(this.state.checked ? this.props.value: '');
-        this.props.vBoo.subscribe('reset', this.reset);
+        this.props.vBoo.mountCheckbox(this.props.checked ? this.props.value: '');
     };
     componentWillUnmount() {
-        this.props.vBoo.unbscribe('reset', this.reset);
         this.props.vBoo.unMount();
     }
-    reset = () => {
-        this.setState({checked: this.props.checked});
-        this.props.vBoo.changeCheckbox(this.state.checked ? this.props.value: '');
-    };
+    componentWillReceiveProps(nextProps) {
+        if(this.props.checked !== nextProps.checked) {
+            this.props.vBoo.change(nextProps.checked ? nextProps.value: '');
+        }
+    }
     change = (event) => {
-        this.setState({
-            checked: !this.state.checked
-        });
-
+        let elem = event.target;
         if(this.props.onChange) {
             this.props.onChange(event);
         }
 
-        this.props.vBoo.changeCheckbox(!this.state.checked ? this.props.value: '');
+        this.props.vBoo.changeCheckbox(elem.checked ? this.props.value: '');
     };
     render() {
         return (
-            <input {...this.cloneProps} onChange={this.change} checked={this.state.checked} />
+            <input {...this.props} onChange={this.change} type="checkbox" />
         )
     }
 }

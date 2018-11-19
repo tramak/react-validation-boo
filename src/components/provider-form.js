@@ -54,8 +54,7 @@ export default class ProviderForm extends Component {
         this.lang = lang;
         this.validators = Object.assign({}, validator, validators);
 
-        this.__debounceVaidate = debounce(this.__validate, delay);
-        this.__throttleVaidate = throttle(this.__validate, delay);
+        this.delay = delay;
     };
     mount = (name, value) => {
         this.__observer.publish('mount:input', {name, value});
@@ -87,7 +86,9 @@ export default class ProviderForm extends Component {
             isValid: false,
             activeScenario: false,
             type: type,
-            typeInput: constants.TYPE_INPUT
+            typeInput: constants.TYPE_INPUT,
+            __debounceVaidate: debounce(this.__validate, this.delay),
+            __throttleVaidate: throttle(this.__validate, this.delay)
         };
     }
     __change(name, value, type) {
@@ -101,9 +102,9 @@ export default class ProviderForm extends Component {
             this.__validate(name, value);
         } else {
             if(typeof(this.__fields[name].error) !== 'undefined') {
-                this.__throttleVaidate(name, value);
+                this.__fields[name].__throttleVaidate(name, value);
             } else {
-                this.__debounceVaidate(name, value);
+                this.__fields[name].__debounceVaidate(name, value);
             }
         }
     };
@@ -123,7 +124,9 @@ export default class ProviderForm extends Component {
             this.__fields[name] = {
                 isValid: false,
                 type: type,
-                typeInput: constants.TYPE_RADIO
+                typeInput: constants.TYPE_RADIO,
+                __debounceVaidate: debounce(this.__validate, this.delay),
+                __throttleVaidate: throttle(this.__validate, this.delay)
             };
 
             if(!checked) {
@@ -164,7 +167,9 @@ export default class ProviderForm extends Component {
             this.__fields[name] = {
                 isValid: false,
                 type: constants.EVENT_INIT,
-                typeInput: constants.TYPE_CHECKBOX
+                typeInput: constants.TYPE_CHECKBOX,
+                __debounceVaidate: debounce(this.__validate, this.delay),
+                __throttleVaidate: throttle(this.__validate, this.delay)
             };
         } else {
             this.__fields[name].type = constants.EVENT_BLUR;
@@ -252,8 +257,10 @@ export default class ProviderForm extends Component {
     getLabel = (name) => {
         return this.__labels[name] || name;
     };
-    setScenario = (scenario, forceUpdate=true) => {
-        if(this.scenario !== scenario) {
+    setScenario = (scenario, forceUpdate=false) => {
+        let scenarioT = this.scenario instanceof Array ? this.scenario.join('') : this.scenario;
+        let scenarioN = scenario instanceof Array ? scenario.join('') : scenario;
+        if(scenarioT !== scenarioN) {
             this.scenario = scenario;
             this.__forceValidate();
             forceUpdate && this.forceUpdate();
@@ -273,25 +280,6 @@ export default class ProviderForm extends Component {
 
         return this.__isValidForm();
     };
-    reset = () => {
-        this.__clearPromiseValidate();
-
-        Object.entries(this.__fields).forEach(([name, item]) => {
-            this.__fields[name].isValid = false;
-            this.__fields[name].type = constants.EVENT_INIT;
-            delete(this.__fields[name].error);
-        });
-
-        this.setScenario('default');
-
-        this.__observer.publish('reset:before');
-        this.__observer.publish('reset');
-        this.__observer.publish('reset:after');
-    };
-    __clearPromiseValidate() {
-        this.__throttleVaidate(false);
-        this.__debounceVaidate(false);
-    }
     __isValidForm() {
         return Object.entries(this.__fields).every(([name, item]) => {
             return item.activeScenario && item.isValid;
@@ -317,14 +305,10 @@ export default class ProviderForm extends Component {
                     mountRadio: (value, checked) => this.mountRadio(name, value, checked),
                     unMount: () => this.unMount(name),
                     change: (value, type) => this.change(name, value, type),
-                    changeRadio: (value, checked, type) => this.changeRadio(name, value, checked, type),
-                    isCheckedRadio: (value) => this.isCheckedRadio(name, value),
                     changeCheckbox: (value) => this.changeCheckbox(name, value),
                     getLabel: () => this.getLabel(name),
                     getError: () => this.getError(name),
-                    hasError: () => this.hasError(name),
-                    subscribe: (event, func) => this.__observer.subscribe(event, func),
-                    unsubscribe: (event, func) => this.__observer.unsubscribe(event, func)
+                    hasError: () => this.hasError(name)
                 };
             }
 
@@ -352,7 +336,7 @@ export default class ProviderForm extends Component {
         return typeof(rule[0]) === 'string' && rule[0] === name
             || rule[0] instanceof Array && rule[0].indexOf(name) !== -1;
     }
-    __validate(name, value) {
+    __validate = (name, value) => {
         if(name === false || !this.__fields.hasOwnProperty(name)) return;
 
         let result = this.__rules.every(item => {
@@ -418,7 +402,6 @@ export default class ProviderForm extends Component {
                 setScenario: this.setScenario,
                 getScenario: this.getScenario,
                 hasScenario: this.hasScenario,
-                reset: this.reset,
                 subscribe: (event, func) => this.__observer.subscribe(event, func),
                 unsubscribe: (event, func) => this.__observer.unsubscribe(event, func)
             }

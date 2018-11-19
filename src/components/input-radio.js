@@ -1,41 +1,31 @@
 import React, {Component} from 'react';
-import constants from '../constants';
 
 class InputRadio extends Component {
-    componentWillMount() {
-        this.cloneProps = Object.assign({}, this.props);
-        this.cloneProps.type = 'radio';
-
-        if(typeof(this.cloneProps.onChange) !== 'undefined') {
-            delete(this.cloneProps.onChange);
-        }
-    }
     componentDidMount() {
         this.props.vBoo.mountRadio(this.props.value, this.props.checked);
-        this.props.vBoo.subscribe('reset', this.reset);
     };
     componentWillUnmount() {
-        this.props.vBoo.unsubscribe('reset', this.reset);
         this.props.vBoo.unMount();
     }
-    reset = () => {
-        this.props.vBoo.changeRadio(this.props.value, this.props.checked, constants.EVENT_INIT);
-    };
+    componentWillReceiveProps(nextProps) {
+        if(this.props.checked !== nextProps.checked && nextProps.checked) {
+            this.props.vBoo.change(nextProps.checked ? nextProps.value: '');
+        }
+    }
     change = (event) => {
-        let val = event.target.value;
+        let elem = event.target;
 
         if(this.props.onChange) {
             this.props.onChange(event);
         }
 
-        this.props.vBoo.changeRadio(val, true);
+        if(elem.checked) {
+            this.props.vBoo.change(elem.value);
+        }
     };
-    isChecked() {
-        return this.props.vBoo.isCheckedRadio(this.cloneProps.value);
-    }
     render() {
         return (
-            <input {...this.cloneProps} onChange={this.change} checked={this.isChecked()} />
+            <input {...this.props} onChange={this.change} type="radio" />
         )
     }
 }

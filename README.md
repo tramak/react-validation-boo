@@ -2,7 +2,7 @@
 
 Компонент для обеспечения проверки сложных динамических форм на React.
 
-react-validation-boo предоставляет вам набор правил и компонентов для валидации форм любой сложности.
+react-validation-boo предоставляет вам набор правил и компонентов для валидации форм.
 
 ## Примеры использования
 
@@ -523,4 +523,210 @@ export default connect({
     }),
     lang: 'ru'
 })(MyForm);
+```
+
+##### Создание компонентов.
+По мимо использования стандартных компонентов вы можете использовать свои.
+Создадим компонент ```InputBlock```, который будет в себе содержать ```label``` и вывод ошибок.
+
+```javascript
+import React, {Component} from 'react';
+import {Input} from 'react-validation-boo';
+
+class InputBlock extends Input {
+    getError = () => {
+        return this.props.vBoo.hasError() ? <div className="error">{this.props.vBoo.getError()}</div> : '';
+    };
+    render() {
+        return (
+            <div>
+                <label>{this.props.vBoo.getLabel()}:</label>
+                <input {...this.props} onChange={this.change} onBlur={this.blur} />
+                {this.getError()}
+            </div>
+        );
+    }
+}
+
+export default InputBlock;
+```
+Заменим все стандартные элементы на блоки
+```javascript
+import React from 'react';
+import {InputCheckbox} from 'react-validation-boo';
+
+class InputCheckboxBlock extends InputCheckbox {
+    getError = () => {
+        return this.props.vBoo.hasError() ? <div className="error">{this.props.vBoo.getError()}</div> : '';
+    };
+    render() {
+        return (
+            <div>
+                <label>{this.props.vBoo.getLabel()}:</label>
+                <input {...this.props} type="checkbox" onChange={this.change} />
+                {this.getError()}
+            </div>
+        );
+    }
+}
+
+export default InputCheckboxBlock;
+```
+
+```javascript
+import React, {Component} from 'react';
+import {Textarea} from 'react-validation-boo';
+
+class TextareaBlock extends Textarea {
+    getError = () => {
+        return this.props.vBoo.hasError() ? <div className="error">{this.props.vBoo.getError()}</div> : '';
+    };
+    render() {
+        return (
+            <div>
+                <label>{this.props.vBoo.getLabel()}:</label>
+                <textarea {...this.props} onChange={this.change} onBlur={this.blur} />
+                {this.getError()}
+            </div>
+        );
+    }
+}
+
+export default TextareaBlock;
+```
+Напишим блок для ```Select``` так чтобы опции можно было передовать не только через теги option, а ещё через массив.
+```javascript
+let genderOptions = [
+    {
+        value: '',
+        label: 'Ваш пол?',
+        disabled: true
+    },
+    {
+        value: 1,
+        label: 'Мужской'
+    },
+    {
+        value: 2,
+        label: 'Женский'
+    }
+];
+<SelectBlock name="gender" options={genderOptions} />
+
+<SelectBlock name="gender">
+    <option disabled>Ваш пол</option>
+    <option value="1">Мужской</option>
+    <option value="2">Женский</option>
+</SelectBlock>
+```
+
+```javascript
+import React, {Component} from 'react';
+import {Select} from 'react-validation-boo';
+
+class SelectBlock extends Select {
+    componentWillMount() {
+        this.children = this.props.options ? this.__getOptions(): this.props.children;
+    }
+    componentWillReceiveProps(nextProps) {
+        if(this.props.value !== nextProps.value) {
+            this.props.vBoo.change(nextProps.value);
+        }
+    }
+    __getOptions() {
+        return this.props.options.map((item) => {
+            return <option value={item.value} disabled={item.disabled}>{item.label}</option>;
+        });
+    }
+    getError = () => {
+        return this.props.vBoo.hasError() ? <div className="error">{this.props.vBoo.getError()}</div> : '';
+    };
+    render() {
+        return (
+            <div>
+                <label>{this.props.vBoo.getLabel()}:</label>
+                <select {...this.props} onChange={this.change}>
+                    {this.children}
+                </select>
+                {this.getError()}
+            </div>
+        );
+    }
+}
+
+export default SelectBlock;
+```
+
+Осталось реализовать компонент ```InputRadioGroupBlock```, мы будем его реализовывать не на базе существующих, а с нуля.
+Компонент ```Form``` библиотеки ```react-validate-boo``` ищет среди своих потомков элименты с полем name
+и в них через ```props```передаёт объект ```vBoo``` в этом объекте и находятся все необходимые методы для работы с валидацией компонента.
+Для начала напишим как мы будем использовать компонент
+```javascript
+let familyRadioList = [
+    {
+        value: 1,
+        label: 'холост'
+    },
+    {
+        value: 2,
+        label: 'сожительство'
+    },
+    {
+        value: 3,
+        label: 'брак'
+    }
+];
+<InputRadioGroupBlock name="familyStatus" items={familyRadioList} />
+
+```
+
+```javascript
+import React, {Component} from 'react';
+
+export default class InputRadioGroupBlock extends Component {
+    state = {
+        value: ''
+    };
+    componentDidMount() {
+        this.setState({value: this.props.value});
+        this.props.vBoo.mount(this.state.value);
+    }
+    componentWillUnmount() {
+        this.props.vBoo.unMount();
+    }
+    componentWillReceiveProps(nextProps) {
+        let value = nextProps.value;
+        if(this.props.value !== nextProps.value) {
+            this.setState({value});
+            this.props.vBoo.change(value);
+        }
+    }
+    getOptions() {
+        return this.props.items.map(item => {
+            let checked = (this.state.value||'').toString()===(item.value||'').toString();
+            return <div key={item.value}>
+                       <input type="radio" name={this.props.name} value={item.value} checked={checked} onChange={this.change} />
+                       <label>{item.label}</label>
+                   </div>;
+        });
+    }
+    change = (event) => {
+        let value = event.target.value;
+        this.props.onChange && this.props.onChange(event);
+        this.setState({value});
+        this.props.vBoo.change(value);
+    };
+    getError = () => {
+        return this.props.vBoo.hasError() ? <div className="error">{this.props.vBoo.getError()}</div> : '';
+    };
+    render() {
+        return (
+            <div>
+                <div>{this.props.vBoo.getLabel()}:</div>
+                {this.getOptions()}
+                {this.getError()}
+            </div>
+        );
+    }
+}
 ```
