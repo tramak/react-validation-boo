@@ -26,6 +26,7 @@ export default class ProviderForm extends Component {
         this.__fields = {};
         this.__labels = {};
         this.__observer = new Observer();
+        this.__isValidForm = false;
         this.state = {};
     }
     componentWillMount() {
@@ -178,6 +179,7 @@ export default class ProviderForm extends Component {
     addError = (name, error) => {
         this.__fields[name].error = error;
         this.__fields[name].isValid = false;
+        this.__updateIsValidForm();
 
         this.setState((state) => {
             let newState = Object.assign({}, state);
@@ -189,6 +191,7 @@ export default class ProviderForm extends Component {
     };
     deleteError = (name) => {
         this.__fields[name].isValid = true;
+        this.__updateIsValidForm();
 
         if(typeof(this.__fields[name].error) !== 'undefined') {
             delete(this.__fields[name].error);
@@ -278,12 +281,19 @@ export default class ProviderForm extends Component {
             return this.__isValidItem(name);
         }
 
-        return this.__isValidForm();
+        return this.__isValidForm;
     };
-    __isValidForm() {
+    __getIsValidForm() {
         return Object.entries(this.__fields).every(([name, item]) => {
             return item.activeScenario && item.isValid;
         });
+    }
+    __updateIsValidForm() {
+        let isValid = this.__getIsValidForm();
+        if(this.__isValidForm !== isValid) {
+            this.__isValidForm = isValid;
+            this.__observer.publish('valid:form', isValid);
+        }
     }
     __isValidItem(name) {
         return this.__fields.hasOwnProperty(name) && this.__fields[name].isValid;
@@ -376,7 +386,7 @@ export default class ProviderForm extends Component {
         }
 
         return result;
-    }
+    };
     __forceValidate() {
         Object.entries(this.__fields).forEach(([name, item]) => {
             item.activeScenario = false;

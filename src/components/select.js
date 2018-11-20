@@ -3,7 +3,8 @@ import constants from '../constants';
 
 class Select extends Component {
     componentDidMount() {
-        this.props.vBoo.mount(this.props.value);
+        let value = this.props.value || this.__getInitValue();
+        this.props.vBoo.mount(value);
     }
     componentWillUnmount() {
         this.props.vBoo.unMount();
@@ -29,6 +30,30 @@ class Select extends Component {
 
         this.props.vBoo.change(val, constants.EVENT_BLUR);
     };
+    __getInitValue() {
+        let multiple = this.props.multiple;
+        let val;
+
+        if(multiple) {
+            val = [];
+        } else {
+            val = '';
+        }
+
+        React.Children.forEach(this.props.children, item => {
+            if(!item.props) return;
+
+            if(item.props.selected) {
+                if(multiple) {
+                    val.push(item.props.value);
+                } else {
+                    val = item.props.value;
+                }
+            }
+        });
+
+        return val;
+    }
     __getValueMultiple(select) {
         return [].slice.call(select.options).reduce((result, option) => {
             if(option.selected) result.push(option.value);
