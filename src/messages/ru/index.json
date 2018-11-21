@@ -4,5 +4,6 @@
   "%value% must be a number.": "Значение «%value%» должно быть числом.",
   "%value% is not a valid URL.": "Значение «%value%» не является правильным URL.",
   "The minimum number of characters must exceed %min%": "Минимальное количество символов должно превышать %min%",
-  "The number of characters must not exceed %max%": "Количество символов не должно привышать %max%"
+  "The number of characters must not exceed %max%": "Количество символов не должно привышать %max%",
+  "%name% must be equal to %compareAttribute%": "Значение «%name%» должно быть равно «%compareAttribute%»"
 }

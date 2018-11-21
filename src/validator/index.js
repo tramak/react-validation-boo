@@ -6,6 +6,7 @@ import email from './email';
 import number from './number';
 import stringLength from './string-length';
 import url from './url';
+import compare from './compare';
 
 export default {
     validator,
@@ -15,5 +16,6 @@ export default {
     email,
     number,
     stringLength,
-    url
+    url,
+    compare
 };

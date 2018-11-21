@@ -359,6 +359,8 @@ export default class ProviderForm extends Component {
 
                 let rulI = new funcRules();
                 rulI.setLang(this.lang);
+                rulI.setFields(this.__fields);
+                rulI.setLabels(this.__labels);
                 rulI.validate(this.getLabel(name), value, item[2]);
 
                 this.__middlewareCall(constants.MIDDLEWARE_VALIDATE_INPUT, {

@@ -1,6 +1,6 @@
 {
   "name": "react-validation-boo",
-  "version": "2.2.2",
+  "version": "2.2.5",
   "description": "react from validation",
   "main": "build/main.js",
   "scripts": {
