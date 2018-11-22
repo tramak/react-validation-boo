@@ -1,9 +1,7 @@
-import validator from './validator';
+import Validator from './validator';
 
-class valid extends validator {
-    validate(name, value, params) {
+export default class Valid extends Validator {
+    validate(){
         return true;
     }
 }
-
-export default valid;

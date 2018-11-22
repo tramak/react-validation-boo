@@ -1,8 +1,8 @@
-import validator from './validator';
+import Validator from './validator';
 
-class notEmptyArray extends validator {
+export default class NotEmptyArray extends Validator {
     validate(name, arrayValues, params) {
-        if(!arrayValues instanceof Array || arrayValues.length === 0) {
+        if(!(arrayValues instanceof Array) || arrayValues.length === 0) {
             let error = params.error || this.translate('%name% must be required.');
             error = error.replace('%name%', name);
             error = error.replace('%value%', arrayValues.join(','));
@@ -10,5 +10,3 @@ class notEmptyArray extends validator {
         }
     }
 }
-
-export default notEmptyArray;

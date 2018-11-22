@@ -1,47 +1,45 @@
 import translate from '../lib/translate';
 
-class validator {
-    constructor() {
+export default class Validator {
+    constructor(){
         this.__isError = false;
         this.__errorMessage = '';
         this.__lang = 'en';
         this.__fields = {};
         this.__labels = {};
     }
-    setLang(lang) {
+    setLang(lang){
         this.__lang = lang;
     }
-    getLang() {
+    getLang(){
         return this.__lang;
     }
-    setFields(fields) {
+    setFields(fields){
         this.__fields = fields;
     }
-    getField(name) {
+    getField(name){
         return this.__fields[name];
     }
-    setLabels(labels) {
+    setLabels(labels){
         this.__labels = labels;
     }
-    getLabel(name) {
+    getLabel(name){
         return this.__labels[name] || name;
     }
-    validate(name, value, params) {
+    validate(name, value, params){
         return true;
     }
     addError(error) {
         this.__isError = true;
         this.__errorMessage = error;
     }
-    hasError() {
+    hasError(){
         return this.__isError;
     }
-    getError() {
+    getError(){
         return this.__errorMessage;
     }
-    translate(message) {
+    translate(message){
         return translate(message, this.getLang());
     }
 }
-
-export default validator;

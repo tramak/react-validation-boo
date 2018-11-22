@@ -1,6 +1,6 @@
-import validator from './validator';
+import Validator from './validator';
 
-class url extends validator {
+export default class Url extends Validator {
     validate(name, value, params) {
         let pattern = new RegExp('^(https?:\/\/)?'+ // protocol
             '((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|'+ // domain name
@@ -16,5 +16,3 @@ class url extends validator {
         }
     }
 }
-
-export default url;

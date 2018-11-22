@@ -1,6 +1,6 @@
-import validator from './validator';
+import Validator from './validator';
 
-class stringLength extends validator {
+export default class StringLength extends Validator {
     validate(name, value, params) {
         if(typeof(value) === 'undefined') {
             value = '';
@@ -29,5 +29,3 @@ class stringLength extends validator {
         }
     }
 }
-
-export default stringLength;

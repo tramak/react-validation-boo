@@ -1,6 +1,6 @@
-import validator from './validator';
+import Validator from './validator';
 
-class number extends validator {
+export default class Number extends Validator {
     validate(name, value, params) {
         if(typeof(value) === 'undefined' || !/^\d+$/.test(value)) {
             let error = params.error || this.translate('%value% must be a number.');
@@ -10,5 +10,3 @@ class number extends validator {
         }
     }
 }
-
-export default number;

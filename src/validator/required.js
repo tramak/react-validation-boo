@@ -1,6 +1,6 @@
-import validator from './validator';
+import Validator from './validator';
 
-class required extends validator {
+export default class Required extends Validator {
     validate(name, value, params) {
         if(!(typeof(value) !== 'undefined' && value !== '')) {
             let error = params.error || this.translate('%name% must be required.');
@@ -10,5 +10,3 @@ class required extends validator {
         }
     }
 }
-
-export default required;

@@ -1,6 +1,6 @@
-import validator from './validator';
+import Validator from './validator';
 
-export default class compare extends validator {
+export default class Compare extends Validator {
     validate(name, value, params) {
         if(!params.hasOwnProperty('compareAttribute')) {
             throw new Error('Missing required arguments: compareAttribute');
